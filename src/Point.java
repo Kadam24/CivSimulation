@@ -131,9 +131,9 @@ public class Point {
     }
 
     public void revolt() {
-        setCurrentCivId(6);
+        setCurrentCivId(Integer.MAX_VALUE);
         for (Point neighbour : neighbourList) {
-            neighbour.setCurrentCivId(6);
+            neighbour.setCurrentCivId(Integer.MAX_VALUE);
         }
     }
 

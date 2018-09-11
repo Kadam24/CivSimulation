@@ -10,19 +10,18 @@ public class Civilization {
     private Board board;
     private boolean exists;
     private String color;
+    private int doctrine;
 
     public Civilization(int civId, Board board, Point startingPoint) {
-        globalGrowthForce = 0;
-        globalGrowthForce = 0;
-        globalMilitaryForce = 0;
-        exists = true;
-        id = civId;
-        this.board = board;
-        fields = new ArrayList<>();
+        init(civId, board);
         fields.add(startingPoint);
     }
 
     public Civilization(int civId, Board board) {
+        init(civId, board);
+    }
+
+    private void init(int civId, Board board) {
         globalGrowthForce = 0;
         globalGrowthForce = 0;
         globalMilitaryForce = 0;
@@ -30,6 +29,9 @@ public class Civilization {
         id = civId;
         this.board = board;
         fields = new ArrayList<>();
+
+        //doktryna rozwoju - wskazuje na współczynnik maksymalizowany : -1 - militaryForce ; 0 - balanced ; 1 -growthForce
+        doctrine = new Random().nextInt(2) -1;
     }
 
     public int CalculateMilitaryForce() {
@@ -59,44 +61,47 @@ public class Civilization {
 
     // Rozrastanie się cywilizacji za pomocą growthForce ( zajmowanie pustych pól )
     public void spread(Point point) {
-        if (point.isHabitable()) {
-            List<Integer> neighbors = point.neighbourTakenBy();
-            int nearbyAllied = 0;
-            for (Integer neighbor : neighbors) {
-                if (neighbor == id)
-                    nearbyAllied += 1;
-            }
-            for (Integer neighbour : neighbors) {
-                if (neighbour == id) {
-                    Random generator = new Random();
-                    if ((generator.nextInt(10000) + 10 * nearbyAllied + 0.001 * CalculateGrowthForce()) > 9980) {
-                        point.setState(1, id);
-                        addField(point);
-                    }
+        if (!point.isHabitable()) {
+            return;
+        }
+        List<Integer> neighbours = point.neighbourTakenBy();
+        int nearbyAllied = 0;
+        for (Integer neighbour : neighbours) {
+            if (neighbour == id)
+                nearbyAllied += 1;
+        }
+        for (Integer neighbour : neighbours) {
+            if (neighbour == id) {
+                Random generator = new Random();
+                if ((generator.nextInt(10000) + 10 * nearbyAllied + 0.001 * CalculateGrowthForce()) > 9980) {
+                    point.setState(1, id);
+                    addField(point);
                 }
             }
         }
+
     }
 
 
     // Rozrastanie się cywilizacji za pomocą MilitaryForce ( przejmowanie zajętych pól )
     public void fight(Point point) {
 
-        if (point.getCurrentCivId() == id) {
+        if (point.getCurrentCivId() == id || !point.isHabitable()) {
             return;
         }
-        List<Integer> neighbors = point.neighbourTakenBy();
+
+        List<Integer> neighbours = point.neighbourTakenBy();
         int nearbyAllied = 0;
         int nearbyEnemy = 0;
         int enemyId = 0;
 
 
-        for (Integer neighbor : neighbors) {
-            if (neighbor == id) {
+        for (Integer neighbour : neighbours) {
+            if (neighbour == id) {
                 nearbyAllied = +1;
-            } else if (neighbor != 0) {
+            } else if (neighbour != 0) {
                 nearbyEnemy = +1;
-                enemyId = neighbor;
+                enemyId = neighbour;
             }
         }
 
@@ -129,7 +134,7 @@ public class Civilization {
     }
 
 
-    //Niskie prawdopodobieństwo na powstanie buntu ( punkt oraz wszyscy Jego sąsiedzi dołączają do frakcji 6 - buntowników )
+    //Niskie prawdopodobieństwo na powstanie buntu ( punkt oraz wszyscy Jego sąsiedzi dołączają do frakcji Integer.MAX_VALUE - buntowników )
     public void tryRevolt(Point point) {
         Random generator = new Random();
         if (getGlobalGrowthForce() > 200 && getGlobalGrowthForce() > getGlobalMilitaryForce() && point.getCurrentCivId() != 0) {
@@ -138,10 +143,10 @@ public class Civilization {
 
                 for (Point neighbour : point.getNeighbours()) {
                     removeField(neighbour);
-                    board.getCiv(6).addField(neighbour);
+                    board.getCiv(Integer.MAX_VALUE).addField(neighbour);
                 }
                 removeField(point);
-                board.getCiv(6).addField(point);
+                board.getCiv(Integer.MAX_VALUE).addField(point);
             }
         }
     }
@@ -176,5 +181,17 @@ public class Civilization {
 
     public void setExists(boolean exists) {
         this.exists = exists;
+    }
+
+    public List<Point> getFields() {
+        return fields;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public int getDoctrine() {
+        return doctrine;
     }
 }
