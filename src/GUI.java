@@ -80,7 +80,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
                     start.setText("Start");
                 }
                 running = !running;
-                clear.setEnabled(true);
+//                clear.setEnabled(true);
 
             }
         }

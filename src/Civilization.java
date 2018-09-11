@@ -11,11 +11,22 @@ public class Civilization {
     private boolean exists;
     private String color;
 
-    public Civilization(int civId, Board board) {
+    public Civilization(int civId, Board board, Point startingPoint) {
         globalGrowthForce = 0;
         globalGrowthForce = 0;
         globalMilitaryForce = 0;
         exists = true;
+        id = civId;
+        this.board = board;
+        fields = new ArrayList<>();
+        fields.add(startingPoint);
+    }
+
+    public Civilization(int civId, Board board) {
+        globalGrowthForce = 0;
+        globalGrowthForce = 0;
+        globalMilitaryForce = 0;
+        exists = false;
         id = civId;
         this.board = board;
         fields = new ArrayList<>();

@@ -6,7 +6,7 @@ public class Program extends JFrame {
     private GUI gof;
 
     public Program() {
-        setTitle("Game of Life");
+        setTitle("Civilization Simulation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         gof = new GUI(this);
