@@ -9,8 +9,10 @@ public class Point {
     private int numStates = 6;
     private int localGrowthForce;
     private int localMilitaryForce;
+    private int localScienceForce;
     private int currentCivId;
 
+    private boolean isCity = false;
     private boolean habitable;
 
     public Point() {
@@ -19,6 +21,7 @@ public class Point {
         currentCivId = 0;
         localGrowthForce = 4 - tmp;
         localMilitaryForce = tmp;
+        localScienceForce = 0;
         currentState = 0;
         nextState = 0;
         neighbourList = new ArrayList<Point>();
@@ -38,7 +41,6 @@ public class Point {
     }
 
     public void calculateNewState() {
-        //TODO: insert logic which updates according to currentState and
         if (currentState == 0 && countNeighbours() > 3)
             nextState = 1;
         /*else if (currentState == 1 && (countNeighbours()>3 || countNeighbours() <2) )
@@ -105,6 +107,14 @@ public class Point {
         this.habitable = habitable;
     }
 
+    public int getLocalScienceForce() {
+        return localScienceForce;
+    }
+
+    public void setLocalScienceForce(int localScienceForce) {
+        this.localScienceForce = localScienceForce;
+    }
+
     public List<Integer> neighbourTakenBy() {
         List<Integer> civs = new ArrayList<Integer>();
         for (Point neighbour : neighbourList) {
@@ -118,13 +128,18 @@ public class Point {
     public int checkIfSurrounded() {
         int hostileNeighbours = 0;
         int idToReturn = 0;
-        for (Point neighbour : neighbourList) {
-            if (neighbour.getCurrentCivId() != currentCivId && neighbour.getCurrentCivId() != 0) {
+        int inhabitableFields = 0;
+        for (Point neighbor : neighbourList) {
+            if (neighbor.getCurrentCivId() != currentCivId && neighbor.getCurrentCivId() != 0) {
                 hostileNeighbours++;
-                idToReturn = neighbour.currentCivId;
+                idToReturn = neighbor.currentCivId;
             }
+            if (!neighbor.isHabitable()) {
+                inhabitableFields++;
+            }
+
         }
-        if (hostileNeighbours > 7) {
+        if (hostileNeighbours + inhabitableFields > 6) {
             return idToReturn;
         } else
             return 0;
@@ -143,6 +158,17 @@ public class Point {
             result.add(neighbour);
         }
         return result;
+    }
+
+    public void createCity() {
+        isCity = true;
+        localMilitaryForce = localGrowthForce * 5;
+        localGrowthForce = localGrowthForce * 5;
+        localScienceForce = localGrowthForce;
+    }
+
+    public boolean isCity() {
+        return isCity;
     }
 
 }
