@@ -4,9 +4,9 @@ import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +24,8 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
     private static int CIV_COUNTER = 0;
     Logger log = Logger.getGlobal();
 
+    private Map<Integer, String> map = new HashMap<Integer, String>();
+
     private static Point[][] points;
     private int size;
     private int iteration;
@@ -39,6 +41,19 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
         iteration = 0;
         size = 14;
+
+
+        for (Field f : Color.class.getFields()) {
+            if (f.getType() == Color.class) {
+                Color c = null;
+                try {
+                    c = (Color) f.get(null);
+                    map.put(c.getRGB(), f.getName());
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         System.out.println("Some things take time.... like initializing the Board");
         initialize(length, height);
@@ -97,7 +112,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
                 if (!civ.getRebel()) ;
                 {
 //                System.out.println("CIV "+ civ.getId() +" Growth: " + civ.CalculateGrowthForce() + " Military: " + civ.CalculateMilitaryForce() + " Fields: " + civ.getNumberOfFields());
-                    log.log(Level.INFO, "\n\nCIV " + civ.getId() +
+                    log.log(Level.INFO, "\n\nCIV " + civ.getId() +" "+ civ.getColor() +
                             "\nGlobal Growth: " + civ.CalculateGrowthForce() +
                             "\nGlobal Military: " + civ.CalculateMilitaryForce() +
                             "\nGlobal Science: " + civ.CalculateScienceForce() +
@@ -117,7 +132,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
     private void logBoardState(int x, int y) {
         log.log(Level.INFO,
-                "\n\nCIV " + points[x][y].getCurrentCivId() +
+                "\n\nCIV " + points[x][y].getCurrentCivId() +" "+ getCiv(points[x][y].getCurrentCivId()).getColor() +
                         "\nField (x : y) : (" + x + " : " + y + ") " +
                         "\nLocal Growth: " + points[x][y].getLocalGrowthForce() +
                         "\nLocal Military: " + points[x][y].getLocalMilitaryForce() +
@@ -301,52 +316,83 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
                             case 1:
 //                                System.out.println("drawNetting --- civId : " + points[x][y].getCurrentCivId());
-                                if (points[x][y].isCity())
+                                if (points[x][y].isCity()) {
                                     g.setColor(new Color(0x09168c));
-                                else
-                                    g.setColor(new Color(0x0000ff));
+                                }
+                                else {
+                                    new Color(0x0000ff);
+                                    g.setColor(Color.BLUE);
+                                    if (iteration == 0) {
+                                        getCiv(points[x][y].getCurrentCivId()).setColor(map.get(g.getColor().getRGB()));
+                                    }
+                                }
 //                             System.out.println("drawNetting --- color : " + g.getColor().toString());
                                 break;
                             case 2:
 //                              System.out.println("drawNetting --- civId : " + points[x][y].getCurrentCivId());
-                                if (points[x][y].isCity())
+                                if (points[x][y].isCity()) {
                                     g.setColor(new Color(0x024f08));
-                                else
-                                    g.setColor(new Color(0x00ff00));
+                                } else {
+                                    new Color(0x00ff00);
+                                    g.setColor(Color.GREEN);
+                                    if (iteration == 0) {
+                                        getCiv(points[x][y].getCurrentCivId()).setColor(map.get(g.getColor().getRGB()));
+                                    }
+                                }
 //                              System.out.println("drawNetting --- color : " + g.getColor().toString());
                                 break;
                             case 3:
 //                                System.out.println("drawNetting --- civId : " + points[x][y].getCurrentCivId());
-                                if (points[x][y].isCity())
+                                if (points[x][y].isCity()) {
                                     g.setColor(new Color(0x4f0202));
-                                else
-                                    g.setColor(new Color(0xff0000));
+                                } else {
+                                    new Color(0xff0000);
+                                    g.setColor(Color.RED);
+                                    if (iteration == 0) {
+                                        getCiv(points[x][y].getCurrentCivId()).setColor(map.get(g.getColor().getRGB()));
+                                    }
+                                }
 //                                System.out.println("drawNetting --- color : " + g.getColor().toString());
                                 break;
                             case 4:
 //                                System.out.println("drawNetting --- civId : " + points[x][y].getCurrentCivId());
-                                if (points[x][y].isCity())
+                                if (points[x][y].isCity()) {
                                     g.setColor(new Color(0x545901));
-                                else
-                                    g.setColor(new Color(0xf4f442));
+                                } else {
+                                    new Color(0xf4f442);
+                                    g.setColor(Color.YELLOW);
+                                    if (iteration == 0) {
+                                        getCiv(points[x][y].getCurrentCivId()).setColor(map.get(g.getColor().getRGB()));
+                                    }
+                                }
 //                                System.out.println("drawNetting --- color : " + g.getColor().toString());
                                 break;
                             case 5:
 //                                System.out.println("drawNetting --- civId : " + points[x][y].getCurrentCivId());
-                                if (points[x][y].isCity())
+                                if (points[x][y].isCity()) {
                                     g.setColor(new Color(0x59004b));
-                                else
-                                    g.setColor(new Color(0xf441d3));
+                                } else {
+                                    new Color(0xf441d3);
+                                    g.setColor(Color.MAGENTA);
+                                    if (iteration == 0) {
+                                        getCiv(points[x][y].getCurrentCivId()).setColor(map.get(g.getColor().getRGB()));
+                                    }
+                                }
 //                                System.out.println("drawNetting --- color : " + g.getColor().toString());
                                 break;
                             case Integer.MAX_VALUE:
 //                                System.out.println("drawNetting --- civId : " + points[x][y].getCurrentCivId());
-                                g.setColor(new Color(0x000000));
+                                new Color(0x000000);
+                                g.setColor(Color.BLACK);
+                                if (iteration == 0) {
+                                    getCiv(points[x][y].getCurrentCivId()).setColor(map.get(g.getColor().getRGB()));
+                                }
 //                              System.out.println("drawNetting --- color : " + g.getColor().toString());
                                 break;
                         }
                     } else if (!points[x][y].isHabitable()) {
-                        g.setColor(new Color(85, 85, 85));
+                        new Color(85, 85, 85);
+                        g.setColor(Color.DARK_GRAY);
                         /*String coords = "(x : y) - ("+x+" : "+y+") ";
                         String state = "state : "+points[x][y].getState()+" ";
                         String civId = "civId : "+points[x][y].getCurrentCivId()+" ";

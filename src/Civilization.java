@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Civilization {
 
@@ -39,6 +36,9 @@ public class Civilization {
         this.board = board;
         fields = new ArrayList<>();
 
+        //doktryna rozwoju - wskazuje na współczynnik maksymalizowany : 0 - militaryForce ; 1 - balanced ; 2 -growthForce
+        doctrine = new Random().nextInt(3) ;
+
         if (id == Integer.MAX_VALUE) {
             isRebel = true;
         }
@@ -58,7 +58,7 @@ public class Civilization {
     public int CalculateGrowthForce() {
         globalGrowthForce = 0;
         for (Point field : fields) {
-            globalGrowthForce = globalGrowthForce + field.getLocalGrowthForce();
+            globalGrowthForce += field.getLocalGrowthForce();
         }
         return globalGrowthForce;
     }
@@ -66,7 +66,7 @@ public class Civilization {
     public int CalculateScienceForce() {
         globalScienceForce = 0;
         for (Point field : fields) {
-            globalScienceForce = globalScienceForce + field.getLocalScienceForce();
+            globalScienceForce += field.getLocalScienceForce();
         }
         return globalScienceForce;
     }
@@ -115,6 +115,7 @@ public class Civilization {
 
     public void initSpread(Point point) {
         if (!isRebel) {
+
             List<Point> neighbourPointList = point.getNeighbours();
             if (doctrine == 0) {
                 neighbourPointList.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
@@ -381,6 +382,10 @@ public class Civilization {
 
     public List<Point> getFields() {
         return fields;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public String getColor() {
