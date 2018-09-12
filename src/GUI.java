@@ -68,7 +68,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
         if (e.getSource().equals(timer)) {
             iterNum++;
             frame.setTitle("Civilization Simulation (" + Integer.toString(iterNum) + " iteration)");
-            board.iteration();
+            board.iterate();
         } else {
             String command = e.getActionCommand();
             if (command.equals("Start")) {
@@ -80,7 +80,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
                     start.setText("Start");
                 }
                 running = !running;
-                clear.setEnabled(true);
+//                clear.setEnabled(true);
 
             }
         }
