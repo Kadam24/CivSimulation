@@ -58,7 +58,8 @@ public class Civilization {
     }
 
     public void removeField(Point point) {
-        fields.remove(point);
+        if (fields.contains(point))
+            fields.remove(point);
     }
 
 
@@ -80,6 +81,12 @@ public class Civilization {
                 if ((generator.nextInt(10000) + 10 * nearbyAllied + 0.001 * CalculateGrowthForce()) > 9980) {
                     point.setState(1, id);
                     addField(point);
+                    board.getCiv(id).addField(point);
+                    for(int i = 1; i < Board.MAX_CIV_NUMBER+1 ; i++) {
+                        if (i != id)
+                            board.getCiv(i).removeField(point);
+                    }
+
                 }
             }
         }
@@ -161,6 +168,7 @@ public class Civilization {
                 if (generator.nextInt(10000) + 3000 * nearbyAllied + 0.1 * CalculateMilitaryForce() - 3000 * nearbyEnemy - 0.1 * board.getCiv(enemyId).CalculateMilitaryForce() > 9980) {
                     point.setState(1, id);
                     addField(point);
+                    board.getCiv(id).addField(point);
                     board.getCiv(enemyId).removeField(point);
                 }
             }

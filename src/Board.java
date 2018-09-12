@@ -23,7 +23,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
     private static final double globalHabitability = 0.8;
 
-    private static final int MAX_CIV_NUMBER = 5;
+    public static final int MAX_CIV_NUMBER = 5;
     private static int CIV_COUNTER = 0;
 
     private static Point[][] points;
@@ -49,7 +49,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
     }
 
     // single iteration
-    public void iteration() {
+    public void iterate() {
 //        this.repaint();
         iteration++;
 
