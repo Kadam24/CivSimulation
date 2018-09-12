@@ -1,16 +1,18 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Civilization {
+
+    private static final double BALANCE_SCALE = 1.1;
+
     private int id;
     private int globalGrowthForce;
     private int globalMilitaryForce;
-    private List<Point> fields;
+    private Set<Point> fields;
     private Board board;
     private boolean exists;
     private String color;
     private int doctrine;
+
 
     public Civilization(int civId, Board board, Point startingPoint) {
         init(civId, board);
@@ -28,10 +30,10 @@ public class Civilization {
         exists = false;
         id = civId;
         this.board = board;
-        fields = new ArrayList<>();
+        fields = new HashSet<>();
 
-        //doktryna rozwoju - wskazuje na współczynnik maksymalizowany : -1 - militaryForce ; 0 - balanced ; 1 -growthForce
-        doctrine = new Random().nextInt(2) -1;
+        //doktryna rozwoju - wskazuje na współczynnik maksymalizowany : 0 - militaryForce ; 1 - balanced ; 2 -growthForce
+        doctrine = new Random().nextInt(3) ;
     }
 
     public int CalculateMilitaryForce() {
@@ -51,7 +53,8 @@ public class Civilization {
     }
 
     public void addField(Point point) {
-        fields.add(point);
+        if (point.isHabitable())
+            fields.add(point);
     }
 
     public void removeField(Point point) {
@@ -65,6 +68,7 @@ public class Civilization {
             return;
         }
         List<Integer> neighbours = point.neighbourTakenBy();
+
         int nearbyAllied = 0;
         for (Integer neighbour : neighbours) {
             if (neighbour == id)
@@ -81,6 +85,46 @@ public class Civilization {
         }
 
     }
+
+    public void initSpread(Point point) {
+        List<Point> neighbourPointList = point.getNeighbours();
+        if (doctrine == 0) {
+            neighbourPointList.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
+            spreadTo(neighbourPointList, point);
+        } else if (doctrine == 2) {
+            neighbourPointList.sort(Comparator.comparing(Point::getLocalGrowthForce).reversed());
+            spreadTo(neighbourPointList, point);
+        } else {
+            if (globalMilitaryForce > globalGrowthForce * BALANCE_SCALE) { // MilForce jest większa od GrForce o 10 %
+                neighbourPointList.sort(Comparator.comparing(Point::getLocalGrowthForce).reversed());
+                spreadTo(neighbourPointList, point);
+            } else if (globalGrowthForce > globalMilitaryForce * BALANCE_SCALE) {
+                neighbourPointList.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
+                spreadTo(neighbourPointList, point);
+            } else
+                spread(point);
+        }
+    }
+
+    private void spreadTo(List<Point> neighbourPointList, Point originalTarget) {
+        for (Point target : neighbourPointList) {
+            if (isInNeighbourhood(target)) {
+                spread(target);
+                return;
+            }
+        }
+        spread(originalTarget);
+    }
+
+    private boolean isInNeighbourhood(Point point) {
+        boolean isInNeighbourhood = false;
+        List<Integer> neighbours = point.neighbourTakenBy();
+        for (Integer neighbour : neighbours) {
+            isInNeighbourhood = isInNeighbourhood || neighbour == id;
+        }
+        return isInNeighbourhood;
+    }
+
 
 
     // Rozrastanie się cywilizacji za pomocą MilitaryForce ( przejmowanie zajętych pól )
@@ -121,6 +165,76 @@ public class Civilization {
                 }
             }
         }
+    }
+
+    public void initFight(Point point) {
+        List<Point> neighbourPointList = point.getNeighbours();
+        List<Point> notOccupiedPoints = getNotOccupiedPointsInNeighbourhood(neighbourPointList);
+        if (!notOccupiedPoints.isEmpty()) {
+            if (doctrine == 0) {
+                notOccupiedPoints.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
+                if (
+                        point.getLocalMilitaryForce() > globalMilitaryForce/ (getNumberOfFields() != 0 ? getNumberOfFields() : 1) ||
+                        notOccupiedPoints.get(0).getLocalMilitaryForce() > point.getLocalMilitaryForce()
+                    ) {
+                    initSpread(notOccupiedPoints.get(0));
+                } else {
+                    fight(point);
+                }
+            } else if (doctrine == 2) {
+                neighbourPointList.sort(Comparator.comparing(Point::getLocalGrowthForce).reversed());
+                initSpread(neighbourPointList.get(0));
+            } else {
+                if (globalMilitaryForce > globalGrowthForce * BALANCE_SCALE) {
+                    notOccupiedPoints.sort(Comparator.comparing(Point::getLocalGrowthForce).reversed());
+                    initSpread(notOccupiedPoints.get(0));
+                } else if (globalGrowthForce > globalMilitaryForce * BALANCE_SCALE) {
+                    notOccupiedPoints.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
+                    initSpread(notOccupiedPoints.get(0));
+                } else {
+                    fight(point);
+                }
+            }
+        } else {
+            if (doctrine == 0) {
+                neighbourPointList.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
+                fightTo(neighbourPointList, point);
+            } else if (doctrine == 2) {
+                neighbourPointList.sort(Comparator.comparing(Point::getLocalGrowthForce).reversed());
+                fightTo(neighbourPointList, point);
+            } else {
+                if (globalMilitaryForce > globalGrowthForce * BALANCE_SCALE) {
+                    neighbourPointList.sort(Comparator.comparing(Point::getLocalGrowthForce).reversed());
+                    fightTo(neighbourPointList, point);
+                } else if (globalGrowthForce > globalMilitaryForce * BALANCE_SCALE) {
+                    neighbourPointList.sort(Comparator.comparing(Point::getLocalMilitaryForce).reversed());
+                    fightTo(neighbourPointList, point);
+                } else {
+                    fight(point);
+                }
+            }
+        }
+    }
+
+
+    private List<Point> getNotOccupiedPointsInNeighbourhood(List<Point> neighbourPointList) {
+        List<Point> notOccupiedPoints = new ArrayList<>();
+        for (Point point : neighbourPointList) {
+            if (point.getCurrentCivId() == 0) {
+                notOccupiedPoints.add(point);
+            }
+        }
+        return notOccupiedPoints;
+    }
+
+    private void fightTo(List<Point> neighbourPointList, Point originalTarget) {
+        for (Point target : neighbourPointList) {
+            if (isInNeighbourhood(target)) {
+                fight(target);
+                return;
+            }
+        }
+        spread(originalTarget);
     }
 
     //Jeśli kratka jest otoczona kratkami tego samego koloru to również staje się tego samego koloru
@@ -183,7 +297,7 @@ public class Civilization {
         this.exists = exists;
     }
 
-    public List<Point> getFields() {
+    public Set<Point> getFields() {
         return fields;
     }
 

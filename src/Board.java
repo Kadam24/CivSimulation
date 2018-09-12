@@ -59,10 +59,10 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
             for (int y = 0; y < points[x].length; ++y) {
                 if (points[x][y].getCurrentCivId() == 0) {
                     for (Civilization civilization : civilizations)
-                        civilization.spread(points[x][y]);
+                        civilization.initSpread(points[x][y]);
                 } else {
                     for (Civilization civilization : civilizations)
-                        civilization.fight(points[x][y]);
+                        civilization.initFight(points[x][y]);
                 }
                 for (Civilization civilization : civilizations)
                     civilization.checkIfSurrounded(points[x][y]);
@@ -91,7 +91,11 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
             log.log(Level.INFO, "\n\nIteration #" + iteration);
             for (Civilization civ : civilizations) {
 //                System.out.println("CIV "+ civ.getId() +" Growth: " + civ.CalculateGrowthForce() + " Military: " + civ.CalculateMilitaryForce() + " Fields: " + civ.getNumberOfFields());
-                log.log(Level.INFO, "\n\nCIV " + civ.getId() + "\nGlobal Growth: " + civ.CalculateGrowthForce() + "\nGlobal Military: " + civ.CalculateMilitaryForce() + "\nFields Count: " + civ.getNumberOfFields()+"\n");
+                log.log(Level.INFO, "\n\nCIV " + civ.getId() +
+                        "\nGlobal Growth: " + civ.CalculateGrowthForce() +
+                        "\nGlobal Military: " + civ.CalculateMilitaryForce() +
+                        "\nFields Count: " + civ.getNumberOfFields() +
+                        "\nDoctrine: "+ (civ.getDoctrine() == 0 ? "Militaristic" : civ.getDoctrine()==2 ? "Economic" : "Balanced") + "\n");
             }
            /* System.out.println("BLUE Growth: " + civilizations.get(0).CalculateGrowthForce() + " Military: " + civilizations.get(0).CalculateMilitaryForce() + " Fields: " + civilizations.get(0).getNumberOfFields());
             System.out.println("GREEN Growth: " + civilizations.get(1).CalculateGrowthForce() + " Military: " + civilizations.get(1).CalculateMilitaryForce() + " Fields: " + civilizations.get(1).getNumberOfFields());
@@ -101,6 +105,18 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
             System.out.println("REBEL Growth: " + civilizations.get(5).CalculateGrowthForce() + " Military: " + civilizations.get(5).CalculateMilitaryForce() + " Fields: " + civilizations.get(5).getNumberOfFields());
             System.out.println(" ");*/
         }
+    }
+
+    private void logBoardState(int x, int y) {
+        log.log(Level.INFO,
+                "\n\nCIV " + points[x][y].getCurrentCivId() +
+                      "\nField (x : y) : (" + x + " : " + y +") " +
+                      "\nLocal Growth: " + points[x][y].getLocalGrowthForce() +
+                      "\nLocal Military: " + points[x][y].getLocalMilitaryForce() +
+                      "\nState: " + points[x][y].getState() +
+                      "\nHabitable: " + points[x][y].isHabitable() +
+                      "\n"
+        );
     }
 
     public void createCiv(int x, int y) {
@@ -325,9 +341,10 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
         int x = e.getX() / size;
         int y = e.getY() / size;
         if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-            points[x][y].clicked();
-            this.repaint();
+            //points[x][y].clicked();
+            //this.repaint();
         }
+        logBoardState(x, y);
     }
 
     public void componentResized(ComponentEvent e) {
