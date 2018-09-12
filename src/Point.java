@@ -139,7 +139,7 @@ public class Point {
             }
 
         }
-        if (hostileNeighbours + inhabitableFields > 6) {
+        if (hostileNeighbours > 8 - inhabitableFields -4) {
             return idToReturn;
         } else
             return 0;
